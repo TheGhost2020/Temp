@@ -1,0 +1,83 @@
+{
+  "apps": {
+    "http": {
+      "servers": {
+        "https": {
+          "listen": [":443"],
+          "routes": [
+            {
+              "handle": [
+                {
+                  "handler": "forward_proxy",
+                  "auth_user_deprecated": "root",
+                  "auth_pass_deprecated": "hNpFvr740NO",
+                  "hide_ip": true,
+                  "hide_via": true,
+                  "probe_resistance": {}
+                }
+              ]
+            },
+            {
+              "handle": [
+                {
+                  "handler": "headers",
+                  "response": {
+                    "set": {
+                      "Strict-Transport-Security": ["max-age=31536000; includeSubDomains; preload"] 
+                    }
+                  }
+                },
+                {
+                  "handler": "reverse_proxy",
+                  "headers": {
+                    "request": {
+                      "set": {
+                        "Host": [
+                          "{http.reverse_proxy.upstream.hostport}"
+                        ],
+                        "X-Forwarded-Host": ["{http.request.host}"]
+                      }
+                    }
+                  },
+                  "transport": {
+                    "protocol": "http",
+                      "tls": {}
+                  },
+                  "upstreams": [
+                    {"dial": "www.fan-2000.com:443"}
+                  ] 
+				}
+              ]
+            }
+          ],
+          "tls_connection_policies": [
+            {
+              "match": {
+                "sni": ["dontknow.yourrepressionendsnow.online"]
+              },
+              "protocol_min": "tls1.2",
+              "protocol_max": "tls1.2",
+              "cipher_suites": ["TLS_ECDHE_ECDSA_WITH_CHACHA20_POLY1305_SHA256"], 
+              "curves": ["secp521r1","secp384r1","secp256r1"],
+              "certificate_selection": {
+                "any_tag": ["cert0"]
+              }
+            }
+          ],
+          "protocols": ["h1","h2"] 
+        }
+      }
+    },
+    "tls": {
+      "certificates": {
+        "load_files": [
+          {
+            "certificate": "/etc/ssl/private/cert.crt",
+            "key": "/etc/ssl/private/private.key",
+            "tags": ["cert0"] 		 
+          }
+        ]
+      }
+    }
+  }
+}
